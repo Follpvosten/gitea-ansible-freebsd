@@ -1,0 +1,59 @@
+- name: Hetzner Cloud VPS Setup
+  hosts: localhost
+  vars_files:
+    - vars/secrets.yml
+  gather_facts: no
+  tasks:
+    - name: Create gitea server
+      hcloud_server:
+        name: hbsd-gitea
+        api_token: "{{ hetzner_cloud_api_key }}"
+        location: fsn1
+        server_type: cx11
+        image: "25953421"
+        ssh_keys:
+          - jonas@notamac
+        state: present
+      register: deployed
+    - name: Add gitea server to inventory
+      add_host:
+        hostname: hbsd-gitea
+        groups:
+          - hcloud
+          - hbsd
+        ansible_host: "{{ deployed.hcloud_server.ipv4_address }}"
+        ansible_user: root
+        ansible_python_interpreter: /usr/local/bin/python3
+        ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
+        hcloud_server_name: "{{ deployed.hcloud_server.name }}"
+    - name: Wait for server to start up
+      delegate_to: hbsd-gitea
+      wait_for_connection:
+        timeout: 200
+    # another!
+    - name: Create test server
+      hcloud_server:
+        name: hbsd-test
+        api_token: "{{ hetzner_cloud_api_key }}"
+        location: fsn1
+        server_type: cx11
+        image: "25953421"
+        ssh_keys:
+          - jonas@notamac
+        state: present
+      register: deployed_test
+    - name: Add test server to inventory
+      add_host:
+        hostname: hbsd-test
+        groups:
+          - hbsd
+          - hcloud
+        ansible_host: "{{ deployed_test.hcloud_server.ipv4_address }}"
+        ansible_user: root
+        ansible_python_interpreter: /usr/local/bin/python3
+        ansible_ssh_extra_args: "-o StrictHostKeyChecking=no"
+        hcloud_server_name: "{{ deployed_test.hcloud_server.name }}"
+    - name: Wait for server to start up
+      delegate_to: hbsd-test
+      wait_for_connection:
+        timeout: 200

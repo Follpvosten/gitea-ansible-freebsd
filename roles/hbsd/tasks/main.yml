@@ -1,0 +1,12 @@
+---
+# This playbook contains basic HardenedBSD maintenance stuff; packages and OS upgrades
+
+- name: Upgrade the OS to the latest build
+  hbsd-update:
+    boot_env: yes
+  notify: reboot
+
+- name: Update packages
+  pkgng:
+    name: "*"
+    state: latest

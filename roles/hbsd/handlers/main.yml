@@ -1,0 +1,8 @@
+---
+- name: restart pf
+  service:
+    name: pf
+    state: restarted
+
+- name: reboot
+  reboot:

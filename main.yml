@@ -1,0 +1,19 @@
+- import_playbook: hcloud.yml
+
+- name: hardenedbsd server maintenance
+  hosts: hbsd
+  roles:
+    - hbsd
+    - pf
+
+- name: gitea server configuration
+  hosts: hbsd-gitea
+
+  vars_files:
+    - vars/secrets.yml
+  vars:
+    disable_gitea_registration: "true"
+    gitea_app_ini: /usr/local/etc/gitea/conf/app.ini
+
+  roles:
+    - gitea

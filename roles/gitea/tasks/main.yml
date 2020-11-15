@@ -1,0 +1,38 @@
+---
+- name: install gitea and caddy packages
+  pkgng:
+    name: gitea,caddy
+    state: present
+
+- name: install caddyfile
+  copy:
+    src: Caddyfile
+    dest: /usr/local/etc/caddy/Caddyfile
+
+- name: set basic settings in app.ini
+  ini_file:
+    path: "{{ gitea_app_ini }}"
+    create: no
+    section: "{{ item.section }}"
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+  loop:
+    - { section: security, key: SECRET_KEY, value: "{{ gitea_secret_key }}" }
+    - {
+        section: service,
+        key: DISABLE_REGISTRATION,
+        value: "{{ disable_gitea_registration }}",
+      }
+    - { section: ui, key: DEFAULT_THEME, value: arc-green }
+  notify: restart gitea
+
+- import_tasks: mail.yml
+
+- name: enable and start services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - gitea
+    - caddy

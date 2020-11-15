@@ -1,0 +1,15 @@
+- name: configure gitea mailer
+  ini_file:
+    path: "{{ gitea_app_ini }}"
+    create: no
+    section: mailer
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  loop:
+    - { option: "ENABLED", value: "true" }
+    - { option: "FROM", value: "git@karpador.xyz" }
+    - { option: "MAILER_TYPE", value: "smtp" }
+    - { option: "HOST", value: "mail.karpador.xyz:587" }
+    - { option: "USER", value: "git@karpador.xyz" }
+    - { option: "PASSWD", value: "{{ gitea_smtp_password }}" }
+  notify: restart gitea

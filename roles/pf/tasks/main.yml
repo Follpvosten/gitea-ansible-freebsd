@@ -1,0 +1,13 @@
+---
+- name: Ensure config is in place
+  template:
+    src: pf.conf.j2
+    dest: /etc/pf.conf
+    validate: /sbin/pfctl -nf %s
+  notify: restart pf
+
+- name: Ensure service is enabled and running
+  service:
+    name: pf
+    enabled: yes
+    state: started
