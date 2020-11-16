@@ -4,9 +4,15 @@
 - name: Upgrade the OS to the latest build
   hbsd-update:
     boot_env: yes
-  notify: reboot
+  register: result
+- name: Reboot after upgrade
+  when: result.changed
+  reboot:
+    # This is necessary because it would otherwise try to cat some /proc thing
+    boot_time_command: sysctl kern.boottime
 
 - name: Update packages
   pkgng:
     name: "*"
     state: latest
+    autoremove: yes
