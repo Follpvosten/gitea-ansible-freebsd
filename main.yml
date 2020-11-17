@@ -1,4 +1,4 @@
-- import_playbook: hcloud.yml
+# - import_playbook: hcloud.yml
 
 - name: hardenedbsd server maintenance
   hosts: hbsd
@@ -7,7 +7,7 @@
     - pf
 
 - name: gitea server configuration
-  hosts: hbsd-gitea
+  hosts: gitea
 
   vars_files:
     - vars/secrets.yml

@@ -6,14 +6,24 @@ set skip on lo0
 # Drop blocked packets
 set block-policy drop
 
+{% if 'jail_host' in group_names %}
+# Allow outbound connections from jails
+nat on em0 from lo1:network to any -> ($ext_if)
+{%- endif -%}
+
 # Allow all outgoing packets
 pass out quick all
 
 # Block all incoming packets...
 block in all
-# ...but accept icmp packets...
+# ...but accept icmp packets.
 pass in quick inet proto icmp all
 pass in quick inet6 proto icmp6 all
-# ...and all tcp packets on these ports.
-tcp_ports = "{ ssh, http, https }"
-pass in proto tcp from any to ($ext_if) port $tcp_ports
+
+# Open the ansible ssh port...
+pass in proto tcp from any to ($ext_if) port {{ ansible_port }}
+
+# ...and other ports relevant to this host's groups.
+{% if 'http' in group_names %}
+pass in proto tcp from any to ($ext_if) port { http, https }
+{% endif %}

@@ -1,5 +1,5 @@
 ---
-- name: restart pf
+- name: reload config
   service:
     name: pf
-    state: restarted
+    state: reloaded

@@ -8,8 +8,7 @@
 - name: Reboot after upgrade
   when: result.changed
   reboot:
-    # This is necessary because it would otherwise try to cat some /proc thing
-    boot_time_command: sysctl kern.boottime
+    post_reboot_delay: 60
 
 - name: Update packages
   pkgng:

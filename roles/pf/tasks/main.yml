@@ -4,8 +4,10 @@
     src: pf.conf.j2
     dest: /etc/pf.conf
     validate: /sbin/pfctl -nf %s
-  notify: restart pf
+  notify: reload config
 
+# Note: This task will cause the connection to drop when run for the first time,
+# so it takes a couple of minutes per host to complete.
 - name: Ensure service is enabled and running
   service:
     name: pf
