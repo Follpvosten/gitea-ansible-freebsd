@@ -10,13 +10,32 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_native
 
 
+def update_available(module: AnsibleModule):
+    hbsd_update_bin = module.get_bin_path("hbsd-update", True)
+    cmd = [hbsd_update_bin, '-C']
+    try:
+        rc, out, _err = module.run_command(cmd)
+    except Exception as e:
+        module.fail_json(msg=to_native(
+            e), exception=traceback.format_exc())
+    if rc != 0:
+        module.fail_json(msg='hbsd-update failed')
+
+    lines = out.splitlines()[1:]
+    for i in range(2):
+        lines[i] = lines[i].split(' ')[3]
+
+    local_version, remote_version = lines
+    return local_version != remote_version
+
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
             force=dict(type='bool', default=False),
             boot_env=dict(type='bool', default=False),
         ),
-        supports_check_mode=False,
+        supports_check_mode=True,
     )
 
     result = dict(
@@ -24,6 +43,13 @@ def main():
         original_message='',
         message=''
     )
+
+    if module.check_mode:
+        # Set changed to true only if update available
+        if update_available(module):
+            result.changed = True
+        # Return early
+        module.exit_json(**result)
 
     force = module.params.get("force")
     boot_env = module.params.get("boot_env")
@@ -47,21 +73,7 @@ def main():
             module.fail_json(msg='hbsd-update failed')
     else:
         # Check first
-        cmd = [hbsd_update_bin, '-C']
-        try:
-            rc, out, _err = module.run_command(cmd)
-        except Exception as e:
-            module.fail_json(msg=to_native(
-                e), exception=traceback.format_exc())
-        if rc != 0:
-            module.fail_json(msg='hbsd-update failed')
-
-        lines = out.splitlines()[1:]
-        for i in range(2):
-            lines[i] = lines[i].split(' ')[3]
-
-        local_version, remote_version = lines
-        if local_version == remote_version:
+        if not update_available(module):
             module.exit_json(**result)
 
         cmd = [hbsd_update_bin]
