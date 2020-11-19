@@ -1,4 +1,9 @@
 ---
+- name: preview config
+  when: ansible_check_mode
+  debug:
+    msg: "pf config: {{ lookup('template', 'pf.conf.j2') }}"
+
 - name: Ensure config is in place
   template:
     src: pf.conf.j2

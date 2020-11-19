@@ -9,7 +9,7 @@ set block-policy drop
 {% if 'jail_host' in group_names %}
 # Allow outbound connections from jails
 nat on em0 from lo1:network to any -> ($ext_if)
-{%- endif -%}
+{% endif %}
 
 # Allow all outgoing packets
 pass out quick all
